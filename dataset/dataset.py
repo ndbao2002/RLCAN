@@ -9,8 +9,9 @@ class Train_Dataset(Dataset):
         self.DATA_PATH = image_path
         self.transform = v2.Compose([
             v2.RandomCrop((patch_size, patch_size)),
-            v2.RandomHorizontalFlip(),
-            v2.RandomVerticalFlip(),
+            v2.RandomHorizontalFlip(p=0.5),
+            v2.RandomVerticalFlip(p=0.5),
+            v2.RandomApply([v2.RandomRotation((90, 90))], p=0.5)
         ])
 
         self.downgrade = v2.Compose([

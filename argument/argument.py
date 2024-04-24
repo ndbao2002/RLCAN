@@ -65,16 +65,16 @@ args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
 args.lr_rate_lte = 1e-4
-args.decay = [40, 80, 120]
+args.decay = [50, 90, 120, 150]
 args.gamma = 0.4
 
 ### training setting
 args.train_crop_size = 48
 args.num_init_epochs = 2
 args.num_epochs = 999 # keep training
-args.print_every = 10
-args.val_every = 4
-args.save_every = 4
+args.print_every = 20
+args.val_every = 5
+args.save_every = 5
 args.save_all = True
 
 ### evaluate / test / finetune setting

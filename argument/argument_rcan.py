@@ -21,7 +21,7 @@ args.dataroot_H = './vntan/Datasets/DIV2K/DIV2K_train_HR'
 # args.dataroot_L = '/content/trainsets/trainL'
 args.n_channels = 3
 args.scale = 4
-args.H_size = 192
+args.L_size = 48
 
 args.data_eval_H = './ndbao/Data/testH'
 args.data_eval_L = './ndbao/Data/testL'
@@ -41,6 +41,8 @@ args.n_colors = 3
 args.res_scale = 1.0
 args.rgb_range = 1.0
 
+args.pre_trained = None
+
 ### loss setting
 args.GAN_type = 'WGAN_GP'
 args.GAN_k = 2
@@ -56,7 +58,7 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [50, 100, 150, 200]
+args.decay = [150, 275, 400, 500]
 args.gamma = 0.4
 
 ### training setting
@@ -67,11 +69,3 @@ args.print_every = 20
 args.val_every = 5
 args.save_every = 5
 args.save_all = True
-
-### evaluate / test / finetune setting
-args.eval = False
-args.eval_save_results = False
-args.model_path = None
-args.test = False
-args.lr_path = './'
-args.ref_path = './'

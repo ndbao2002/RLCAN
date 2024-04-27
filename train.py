@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     # Define dataset
     train_dataset = Train_Dataset(image_path=args.dataroot_H, 
-                                patch_size=args.H_size, 
+                                patch_size=args.L_size, 
                                 scale=args.scale)
 
     train_dataloader = DataLoader(train_dataset,

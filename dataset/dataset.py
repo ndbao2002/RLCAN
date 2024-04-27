@@ -8,15 +8,14 @@ class Train_Dataset(Dataset):
     def __init__(self, image_path, patch_size, scale):
         self.DATA_PATH = image_path
         self.transform = v2.Compose([
-            v2.RandomCrop((patch_size, patch_size)),
+            v2.RandomCrop((patch_size*scale, patch_size*scale)),
             v2.RandomHorizontalFlip(p=0.5),
             v2.RandomVerticalFlip(p=0.5),
             v2.RandomApply([v2.RandomRotation((90, 90))], p=0.5)
         ])
 
         self.downgrade = v2.Compose([
-            v2.Resize((patch_size//scale, patch_size//scale), interpolation=v2.InterpolationMode.BICUBIC),
-            #v2.Resize((192, 192), interpolation=v2.InterpolationMode.BICUBIC)
+            v2.Resize((patch_size, patch_size), interpolation=v2.InterpolationMode.BICUBIC),
         ])
 
         self.to_tensor = v2.Compose([

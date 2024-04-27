@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     # Define dataset
     train_dataset = Train_Dataset(image_path=args.dataroot_H, 
-                                patch_size=args.H_size, 
+                                patch_size=args.L_size, 
                                 scale=args.scale)
 
     train_dataloader = DataLoader(train_dataset,
@@ -40,6 +40,11 @@ if __name__ == '__main__':
     
     # Define model
     model = RCAN(args)
+    
+    if args.pre_trained:
+        model.load_state_dict(
+            torch.load(args.pre_trained),
+            strict=False,)
     
     # Optimizer, lr scheduler
     device = torch.device('cpu') if args.cpu else torch.device('cuda')

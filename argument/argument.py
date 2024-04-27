@@ -21,7 +21,7 @@ args.dataroot_H = './vntan/Datasets/DIV2K/DIV2K_train_HR'
 # args.dataroot_L = '/content/trainsets/trainL'
 args.n_channels = 3
 args.scale = 4
-args.H_size = 192
+args.L_size = 48
 
 args.data_eval_H = './ndbao/Data/testH'
 args.data_eval_L = './ndbao/Data/testL'
@@ -76,11 +76,3 @@ args.print_every = 20
 args.val_every = 5
 args.save_every = 5
 args.save_all = True
-
-### evaluate / test / finetune setting
-args.eval = False
-args.eval_save_results = False
-args.model_path = None
-args.test = False
-args.lr_path = './'
-args.ref_path = './'

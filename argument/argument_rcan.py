@@ -20,7 +20,7 @@ args.dataset = 'DIV2K'
 args.dataroot_H = './vntan/Datasets/DIV2K/DIV2K_train_HR'
 # args.dataroot_L = '/content/trainsets/trainL'
 args.n_channels = 3
-args.scale = 4
+args.scale = 2
 args.L_size = 48
 
 args.data_eval_H = './ndbao/Data/testH'
@@ -58,8 +58,8 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [150, 275, 400, 500]
-args.gamma = 0.4
+args.decay = [200, 350, 450, 500]
+args.gamma = 0.5
 
 ### training setting
 args.train_crop_size = 48

@@ -23,8 +23,8 @@ args.n_channels = 3
 args.scale = 2
 args.L_size = 48
 
-args.data_eval_H = './ndbao/Data/testH'
-args.data_eval_L = './ndbao/Data/testL'
+args.data_eval_H = './ndbao/Data/testH_x2'
+args.data_eval_L = './ndbao/Data/testL_x2'
 
 ### dataloader setting
 args.num_workers = 2

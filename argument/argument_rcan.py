@@ -64,7 +64,7 @@ args.gamma = 0.5
 ### training setting
 args.train_crop_size = 48
 args.num_init_epochs = 2
-args.num_epochs = 999 # keep training
+args.num_epochs = 9999 # keep training
 args.print_every = 20
 args.val_every = 5
 args.save_every = 5

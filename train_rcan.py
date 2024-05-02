@@ -90,10 +90,10 @@ if __name__ == '__main__':
         count = 0
         start_epoch = 0
         log_loss = []
-    max_psnr = 0
-    max_psnr_epoch = 0
-    max_ssim = 0
-    max_ssim_epoch = 0
+    max_psnr = 37.738
+    max_psnr_epoch = 970
+    max_ssim = 0.9598
+    max_ssim_epoch = 970
 
     for epoch in range(start_epoch+1, args.num_epochs+1):
         model.train()

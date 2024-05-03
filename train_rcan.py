@@ -18,6 +18,7 @@ from torch.nn import functional as F
 if __name__ == '__main__':
     # Setup logger
     logger = mkExpDir(args)
+    logger.info('LOGGER SETUP COMPLETED')
     
     # Define dataset
     train_dataset = Train_Dataset(image_path=args.dataroot_H, 
@@ -38,6 +39,8 @@ if __name__ == '__main__':
                             batch_size=1,
                             num_workers=1)
     
+    logger.info('DATASET LOADED')
+    
     # Define model
     model = RCAN(args)
     
@@ -45,6 +48,7 @@ if __name__ == '__main__':
         model.load_state_dict(
             torch.load(args.pre_trained),
             strict=False,)
+    logger.info('MODEL LOADED')
     
     # Optimizer, lr scheduler
     device = torch.device('cpu') if args.cpu else torch.device('cuda')

@@ -2,8 +2,6 @@ from .utils import MeanShift, Upsampler, default_conv
 
 from torch import nn
 
-from yacs.config import CfgNode as CN
-
 ## Channel Attention (CA) Layer
 class CALayer(nn.Module):
     def __init__(self, channel, reduction=16, local=None):
@@ -47,7 +45,7 @@ class CALayer(nn.Module):
         if self.local:
             z = self.local_pool(x)
             z = self.conv_local(z)
-            x = self.local_attention(z, x)
+            x = self.local_attention(z, x.clone())
             
         y = self.global_pool(x)
         y = self.conv_global(y)
@@ -174,20 +172,4 @@ class RCAN(nn.Module):
                 raise KeyError('missing keys in state_dict: "{}"'.format(missing))
     
 if __name__ == "__main__":
-    args = CN()
-    
-    ### model setting
-    args.scale = 2
-    args.n_resgroups = 10
-    args.n_resblocks = 20
-    args.n_feats = 64
-    args.reduction = 16
-    args.num_windows = [2**3]
-
-    args.n_colors = 3
-    args.res_scale = 1.0
-    args.rgb_range = 1.0
-
-    args.pre_trained = None
-    
-    RCAN(args)
+    pass

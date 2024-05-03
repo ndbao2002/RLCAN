@@ -36,6 +36,7 @@ args.n_resgroups = 10
 args.n_resblocks = 20
 args.n_feats = 64
 args.reduction = 16
+args.num_windows = [2**3]
 
 args.n_colors = 3
 args.res_scale = 1.0
@@ -58,7 +59,7 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [200, 350, 450, 500]
+args.decay = [200, 400, 600, 800]
 args.gamma = 0.5
 
 ### training setting

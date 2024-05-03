@@ -36,7 +36,7 @@ args.n_resgroups = 10
 args.n_resblocks = 20
 args.n_feats = 64
 args.reduction = 16
-args.num_windows = [2**3]
+args.num_windows = [2**4]
 
 args.n_colors = 3
 args.res_scale = 1.0

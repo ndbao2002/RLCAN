@@ -17,7 +17,7 @@ args.num_gpu = 1
 
 ### dataset setting
 args.dataset = 'DIV2K'
-args.dataroot_H = './vntan/Datasets/DIV2K/DIV2K_train_HR'
+args.dataroot_H = './Dataset/TrainDataset/DIV2K/DIV2K_train_HR'
 # args.dataroot_L = '/content/trainsets/trainL'
 args.n_channels = 3
 args.scale = 2

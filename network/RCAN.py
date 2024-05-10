@@ -7,17 +7,7 @@ class CALayer(nn.Module):
     def __init__(self, channel, reduction=16, local=None):
         super(CALayer, self).__init__()
         self.local = local
-
-        # global average pooling: feature --> point
-        self.global_pool = nn.AdaptiveAvgPool2d(1)
-        # feature channel downscale and upscale --> channel weight
-        self.conv_global = nn.Sequential(
-                nn.Conv2d(channel, channel // reduction, 1, padding=0, bias=True),
-                nn.ReLU(inplace=True),
-                nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
-                nn.Sigmoid()
-        )
-
+        
         # local average pooling: feature --> points of feature
         if self.local:
             self.local_pool = nn.AdaptiveAvgPool2d(local)
@@ -28,6 +18,17 @@ class CALayer(nn.Module):
                     nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
                     nn.Sigmoid()
             )
+        else:
+            # global average pooling: feature --> point
+            self.global_pool = nn.AdaptiveAvgPool2d(1)
+            # feature channel downscale and upscale --> channel weight
+            self.conv_global = nn.Sequential(
+                    nn.Conv2d(channel, channel // reduction, 1, padding=0, bias=True),
+                    nn.ReLU(inplace=True),
+                    nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
+                    nn.Sigmoid()
+            )
+
 
     def local_attention(self, z, x):
         H = x.size(-2) // z.size(-2)
@@ -46,11 +47,11 @@ class CALayer(nn.Module):
             z = self.local_pool(x)
             z = self.conv_local(z)
             x = self.local_attention(z, x.clone())
-            
-        y = self.global_pool(x)
-        y = self.conv_global(y)
-
-        return x * y
+        else: 
+            y = self.global_pool(x)
+            y = self.conv_global(y)
+            x = x * y
+        return x
 
 ## Residual Channel Attention Block (RCAB)
 class RCAB(nn.Module):
@@ -81,7 +82,7 @@ class ResidualGroup(nn.Module):
         modules_body = []
         modules_body = [
             RCAB(
-                conv, n_feat, kernel_size, reduction, num_windows[i%len(num_windows)],
+                conv, n_feat, kernel_size, reduction, None if i%2==0 else num_windows[i%len(num_windows)],
                 bias=True, bn=False, act=nn.ReLU(True), res_scale=1) \
             for i in range(n_resblocks)]
         modules_body.append(conv(n_feat, n_feat, kernel_size))

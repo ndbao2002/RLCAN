@@ -36,7 +36,7 @@ args.n_resgroups = 6
 args.n_resblocks = 6
 args.n_feats = 96
 args.heads = 4
-args.window_size = 8
+args.window_size = 7
 
 args.n_colors = 3
 args.res_scale = 1.0

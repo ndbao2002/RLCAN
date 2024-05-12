@@ -8,7 +8,7 @@ from natten import NeighborhoodAttention2D
 
 ## Neighbor Attention (CA) Layer
 class NALayer(nn.Module):
-    def __init__(self, channel, heads=4, window_size=8):
+    def __init__(self, channel, heads=4, window_size=7):
         super(NALayer, self).__init__()
         
         self.attn = NeighborhoodAttention2D(dim=channel, num_heads=heads, kernel_size=window_size, dilation=1)
@@ -23,13 +23,13 @@ class NALayer(nn.Module):
 ## Residual Channel Attention Block (RCAB)
 class RNAB(nn.Module):
     def __init__(
-        self, conv, n_feat, heads, window_size=8,
+        self, conv, n_feat, heads, window_size=7,
         bias=True, bn=False, act=nn.GELU(), res_scale=1):
 
         super(RNAB, self).__init__()
         self.body = nn.Sequential(
             conv(n_feat, n_feat, 7, bias=bias),
-            nn.LayerNorm(),
+            nn.BatchNorm2d(n_feat) if bn else nn.Identity(),
             conv(n_feat, n_feat*4, 1, bias=True),
             act if act else nn.Identity(),
             conv(n_feat*4, n_feat, 1, bias=True),
@@ -45,7 +45,7 @@ class RNAB(nn.Module):
 
 ## Residual Group (RG)
 class ResidualGroup(nn.Module):
-    def __init__(self, conv, n_feat, kernel_size, heads, act, res_scale, n_resblocks, window_size=8):
+    def __init__(self, conv, n_feat, kernel_size, heads, act, res_scale, n_resblocks, window_size=7):
         super(ResidualGroup, self).__init__()
         modules_body = []
         modules_body = [

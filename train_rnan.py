@@ -76,7 +76,6 @@ if __name__ == '__main__':
     
     # Train
     model.to(device)
-    max_num_window = max(args.num_windows)
 
     last_trained_path = None
     save_all_training = True
@@ -160,17 +159,8 @@ if __name__ == '__main__':
                     
                     h_old = lr.size(2)
                     w_old = lr.size(3)
-                    
-                    if h_old % max_num_window != 0:
-                        h_pad = (h_old // max_num_window + 1) * max_num_window - h_old
-                        lr = torch.cat([lr, torch.flip(lr, [2])], 2)[:, :, :h_old + h_pad, :]
-
-                    if w_old % max_num_window != 0:
-                        w_pad = (w_old // max_num_window + 1) * max_num_window - w_old
-                        lr = torch.cat([lr, torch.flip(lr, [3])], 3)[:, :, :, :w_old + w_pad]
                         
                     sr = model(lr)
-                    sr = sr[..., :h_old * args.scale, :w_old * args.scale]
 
                     ### calculate psnr and ssim
                     _psnr, _ssim = calc_psnr_and_ssim_torch_metric(sr.detach(), hr.detach())

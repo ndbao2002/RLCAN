@@ -59,7 +59,7 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [400, 700, 1000, 1200]
+args.decay = [1000, 1500, 1750, 2000]
 args.gamma = 0.5
 
 ### training setting

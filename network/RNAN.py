@@ -10,7 +10,7 @@ from natten import NeighborhoodAttention2D
 class NALayer(nn.Module):
     def __init__(self, channel, heads=4, window_size=7):
         super(NALayer, self).__init__()
-        
+
         self.attn = NeighborhoodAttention2D(dim=channel, num_heads=heads, kernel_size=window_size, dilation=1)
 
 
@@ -60,27 +60,27 @@ class ResidualGroup(nn.Module):
         res = self.body(x)
         res += x
         return res
-    
+
 ## Residual Channel Attention Network (RCAN)
 class RNAN(nn.Module):
     def __init__(self, args, conv=default_conv):
         super(RNAN, self).__init__()
-        
+
         n_resgroups = args.n_resgroups
         n_resblocks = args.n_resblocks
         n_feats = args.n_feats
         window_size = args.window_size
         kernel_size = 3
-        heads = args.heads 
+        heads = args.heads
         scale = args.scale
         res_scale = args.res_scale
-        act = nn.GELU(True)
-        
+        act = nn.GELU()
+
         # RGB mean for DIV2K
         rgb_mean = (0.4488, 0.4371, 0.4040)
         rgb_std = (1.0, 1.0, 1.0)
         self.sub_mean = MeanShift(args.rgb_range, rgb_mean, rgb_std)
-        
+
         # define head module
         modules_head = [conv(args.n_colors, n_feats, kernel_size)]
 
@@ -113,7 +113,7 @@ class RNAN(nn.Module):
         x = self.tail(res)
         x = self.add_mean(x)
 
-        return x 
+        return x
 
 if __name__ == "__main__":
     pass

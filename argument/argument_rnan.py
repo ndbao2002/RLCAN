@@ -34,7 +34,7 @@ args.batch_size = 16
 args.scale = 2
 args.n_resgroups = 6
 args.n_resblocks = 6
-args.n_feats = 96
+args.n_feats = 180
 args.heads = 4
 args.window_size = 7
 

@@ -1,4 +1,4 @@
-from .utils import MeanShift, Upsampler, default_conv
+from .utils import MeanShift, Upsampler, default_conv, Mlp
 
 from torch import nn
 
@@ -11,25 +11,41 @@ class NALayer(nn.Module):
     def __init__(self, channel, heads=4, window_size=7):
         super(NALayer, self).__init__()
 
-        self.attn = NeighborhoodAttention2D(dim=channel, num_heads=heads, kernel_size=window_size, dilation=1)
+        self.attn = NeighborhoodAttention2D(dim=channel, 
+                                            num_heads=heads, 
+                                            kernel_size=window_size, 
+                                            dilation=1,
+                                            rel_pos_bias=True)
+        self.mlp = Mlp(in_features=channel, hidden_features=channel*4)
+        
+        self.gnorm = nn.GroupNorm(1, channel)
+        self.lnorm = nn.LayerNorm(channel)
 
 
     def forward(self, x):
+        N, C, H, W = x.size()
+        
+        x1 = x
+        x1 = rearrange(x1, ('n c h w -> n h w c'))
+        
+        x = self.gnorm(x)
         x = rearrange(x, ('n c h w -> n h w c'))
-        x = self.attn(x)
-        x = rearrange(x, ('n h w c -> n c h w'))
+        x = self.attn(x) + x1
+        x = rearrange(x, ('n h w c -> n (h w) c'))
+        x = x + self.mlp(self.lnorm(x)) 
+        x = rearrange(x, ('n (h w) c -> n c h w'), h = H)
         return x
 
 ## Residual Channel Attention Block (RCAB)
 class RNAB(nn.Module):
     def __init__(
         self, conv, n_feat, heads, window_size=7,
-        bias=True, bn=False, act=nn.GELU(), res_scale=1):
+        bias=True, gn=True, act=nn.GELU(), res_scale=1.0):
 
         super(RNAB, self).__init__()
         self.body = nn.Sequential(
             conv(n_feat, n_feat, 7, bias=bias),
-            nn.BatchNorm2d(n_feat) if bn else nn.Identity(),
+            nn.GroupNorm(1, n_feat) if gn else nn.Identity(),
             conv(n_feat, n_feat*4, 1, bias=True),
             act if act else nn.Identity(),
             conv(n_feat*4, n_feat, 1, bias=True),
@@ -51,7 +67,7 @@ class ResidualGroup(nn.Module):
         modules_body = [
             RNAB(
                 conv, n_feat, heads, window_size=window_size,
-                bias=True, bn=False, act=act, res_scale=res_scale) \
+                bias=True, gn=True, act=act, res_scale=res_scale) \
             for i in range(n_resblocks)]
         modules_body.append(conv(n_feat, n_feat, kernel_size))
         self.body = nn.Sequential(*modules_body)

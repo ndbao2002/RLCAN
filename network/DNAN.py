@@ -1,6 +1,7 @@
 from .utils import MeanShift, Upsampler, default_conv, Mlp
 
 from torch import nn
+import torch
 
 from einops import rearrange
 
@@ -36,41 +37,72 @@ class NALayer(nn.Module):
         x = rearrange(x, ('n (h w) c -> n c h w'), h = H)
         return x
 
-## Residual Group (RG)
-class ResidualGroup(nn.Module):
-    def __init__(self, conv, n_feat, kernel_size, heads, act, res_scale, n_resblocks, window_size=7):
-        super(ResidualGroup, self).__init__()
-        modules_body = [
-            NALayer(channel=n_feat, heads=heads, window_size=window_size) \
-            for i in range(n_resblocks)]
-        modules_body.append(conv(n_feat, n_feat, kernel_size))
-        self.body = nn.Sequential(*modules_body)
-        
-        self.conv = nn.Sequential(            
-            conv(n_feat, n_feat, 7, bias=True),
-            nn.GroupNorm(1, n_feat),
-            conv(n_feat, n_feat*4, 1, bias=True),
-            act if act else nn.Identity(),
-            conv(n_feat*4, n_feat, 1, bias=True),
+## Residual Channel Attention Block (RCAB)
+class RNAB(nn.Module):
+    def __init__(
+        self, conv, n_feat, heads, window_size=7,
+        bias=True, gn=True, act=nn.GELU(), res_scale=1.0):
+
+        super(RNAB, self).__init__()
+        self.body = nn.Sequential(
+            NALayer(channel=n_feat, heads=heads, window_size=window_size),
+            conv(n_feat, n_feat, 3, bias=True),
         )
+        self.res_scale = res_scale
 
     def forward(self, x):
-        res = self.body(x)
-        res = self.conv(res)
-        return res + x
+        # res = self.body(x)
+        res = self.body(x).mul(self.res_scale)
+        res += x
+        return res
+
+## Residual Group (RG)
+class ResidualDenseGroup(nn.Module):
+    def __init__(self, conv, n_feat, gc, kernel_size, heads, act, res_scale, window_size=7):
+        super(ResidualDenseGroup, self).__init__()
+        
+        self.rnab1 = RNAB(conv, n_feat, heads, window_size=window_size,
+                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.adjust1 = conv(n_feat, gc, kernel_size)    
+        
+        self.rnab2 = RNAB(conv, n_feat + gc, heads, window_size=window_size,
+                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.adjust2 = conv(n_feat + gc, gc, kernel_size)    
+        
+        self.rnab3 = RNAB(conv, n_feat + gc*2, heads, window_size=window_size,
+                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.adjust3 = conv(n_feat + gc*2, gc, kernel_size)    
+        
+        self.rnab4 = RNAB(conv, n_feat + gc*3, heads, window_size=window_size,
+                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.adjust4 = conv(n_feat + gc*3, gc, kernel_size)
+        
+        self.rnab5 = RNAB(conv, n_feat + gc*4, heads, window_size=window_size,
+                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.adjust5 = conv(n_feat + gc*4, n_feat, kernel_size)      
+    
+        self.lrelu = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+
+    def forward(self, x):
+        x1 = self.lrelu(self.adjust1(self.rnab1(x)))
+        x2 = self.lrelu(self.adjust2(self.rnab2(torch.cat((x, x1), 1))))
+        x3 = self.lrelu(self.adjust3(self.rnab3(torch.cat((x, x1, x2), 1))))
+        x4 = self.lrelu(self.adjust4(self.rnab4(torch.cat((x, x1, x2, x3), 1))))
+        x5 =            self.adjust5(self.rnab5(torch.cat((x, x1, x2, x3, x4), 1)))
+        return x5 * 0.2 + x
 
 ## Residual Channel Attention Network (RCAN)
-class RNAN(nn.Module):
+class DNAN(nn.Module):
     def __init__(self, args, conv=default_conv):
-        super(RNAN, self).__init__()
+        super(DNAN, self).__init__()
 
         n_resgroups = args.n_resgroups
-        n_resblocks = args.n_resblocks
         n_feats = args.n_feats
         window_size = args.window_size
         kernel_size = 3
         heads = args.heads
         scale = args.scale
+        gc = args.gc
         res_scale = args.res_scale
         act = nn.GELU()
 
@@ -84,8 +116,8 @@ class RNAN(nn.Module):
 
         # define body module
         modules_body = [
-            ResidualGroup(
-                conv, n_feats, kernel_size, heads, act=act, res_scale=res_scale, n_resblocks=n_resblocks, window_size=window_size) \
+            ResidualDenseGroup(
+                conv, n_feats, gc, kernel_size, heads, act=act, res_scale=res_scale, window_size=window_size) \
             for _ in range(n_resgroups)]
 
         modules_body.append(conv(n_feats, n_feats, kernel_size))

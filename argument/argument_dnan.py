@@ -28,15 +28,15 @@ args.data_eval_L = './ndbao/Data/testL_x2'
 
 ### dataloader setting
 args.num_workers = 2
-args.batch_size = 16
+args.batch_size = 8
 
 ### model setting
 args.scale = 2
-args.n_resgroups = 6
-args.n_feats = 160
+args.n_resgroups = 12
+args.n_feats = 180
 args.gc = 32
 args.heads = 4
-args.window_size = 7
+args.window_size = 15
 
 args.n_colors = 3
 args.res_scale = 1.0

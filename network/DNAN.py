@@ -17,7 +17,7 @@ class NALayer(nn.Module):
                                             kernel_size=window_size, 
                                             dilation=1,
                                             rel_pos_bias=True)
-        self.mlp = Mlp(in_features=channel, hidden_features=channel*4)
+        self.mlp = Mlp(in_features=channel, hidden_features=channel*2)
         
         self.gnorm = nn.GroupNorm(1, channel)
         self.lnorm = nn.LayerNorm(channel)
@@ -61,34 +61,29 @@ class ResidualDenseGroup(nn.Module):
     def __init__(self, conv, n_feat, gc, kernel_size, heads, act, res_scale, window_size=7):
         super(ResidualDenseGroup, self).__init__()
         
-        self.rnab1 = RNAB(conv, n_feat, heads, window_size=window_size,
-                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.na1 = NALayer(n_feat, heads, window_size=window_size)
         self.adjust1 = conv(n_feat, gc, kernel_size)    
         
-        self.rnab2 = RNAB(conv, n_feat + gc, heads, window_size=window_size,
-                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.na2 = NALayer(n_feat + gc, heads, window_size=window_size)
         self.adjust2 = conv(n_feat + gc, gc, kernel_size)    
         
-        self.rnab3 = RNAB(conv, n_feat + gc*2, heads, window_size=window_size,
-                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.na3 = NALayer(n_feat + gc*2, heads, window_size=window_size)
         self.adjust3 = conv(n_feat + gc*2, gc, kernel_size)    
         
-        self.rnab4 = RNAB(conv, n_feat + gc*3, heads, window_size=window_size,
-                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.na4 = NALayer(n_feat + gc*3, heads, window_size=window_size)
         self.adjust4 = conv(n_feat + gc*3, gc, kernel_size)
         
-        self.rnab5 = RNAB(conv, n_feat + gc*4, heads, window_size=window_size,
-                            bias=True, gn=True, act=act, res_scale=res_scale)
+        self.na5 = NALayer(n_feat + gc*4, heads, window_size=window_size)
         self.adjust5 = conv(n_feat + gc*4, n_feat, kernel_size)      
     
         self.lrelu = nn.LeakyReLU(negative_slope=0.2, inplace=True)
 
     def forward(self, x):
-        x1 = self.lrelu(self.adjust1(self.rnab1(x)))
-        x2 = self.lrelu(self.adjust2(self.rnab2(torch.cat((x, x1), 1))))
-        x3 = self.lrelu(self.adjust3(self.rnab3(torch.cat((x, x1, x2), 1))))
-        x4 = self.lrelu(self.adjust4(self.rnab4(torch.cat((x, x1, x2, x3), 1))))
-        x5 =            self.adjust5(self.rnab5(torch.cat((x, x1, x2, x3, x4), 1)))
+        x1 = self.lrelu(self.adjust1(self.na1(x)))
+        x2 = self.lrelu(self.adjust2(self.na2(torch.cat((x, x1), 1))))
+        x3 = self.lrelu(self.adjust3(self.na3(torch.cat((x, x1, x2), 1))))
+        x4 = self.lrelu(self.adjust4(self.na4(torch.cat((x, x1, x2, x3), 1))))
+        x5 =            self.adjust5(self.na5(torch.cat((x, x1, x2, x3, x4), 1)))
         return x5 * 0.2 + x
 
 ## Residual Channel Attention Network (RCAN)

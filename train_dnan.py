@@ -167,8 +167,8 @@ if __name__ == '__main__':
 
                     lr = F.interpolate(lr, (hr.size(2), hr.size(3)), mode='bicubic')
 
-                    torchvision.utils.save_image(torch.concat([hr, sr, lr], dim=0),
-                                                os.path.join(img_eval_dir, f'Set5_{cnt}.png'))
+                    # torchvision.utils.save_image(torch.concat([hr, sr, lr], dim=0),
+                    #                             os.path.join(img_eval_dir, f'Set5_{cnt}.png'))
 
                     psnr += _psnr
                     ssim += _ssim

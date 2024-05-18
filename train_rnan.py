@@ -82,8 +82,12 @@ if __name__ == '__main__':
         data = torch.load(os.path.join(last_trained_path))
         if save_all_training:
             # scheduler.load_state_dict(data['scheduler'])
-            for _ in range(data['epoch']):
-                scheduler.step()
+            scheduler = optim.lr_scheduler.MultiStepLR(
+                optimizer,
+                milestones=args.decay,
+                gamma=args.gamma,
+                last_epoch=data['epoch'],
+            )
             optimizer.load_state_dict(data['opt'])
             
             lr = scheduler.get_last_lr()[0]

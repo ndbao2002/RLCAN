@@ -96,6 +96,7 @@ if __name__ == '__main__':
                 g['lr'] = lr
             
         model.load_state_dict(data['model'])
+        logger.info(f'Load Pretrained model at epoch {data['epoch']}')
         count = data['step']
         start_epoch = data['epoch']
         log_loss = data['loss']

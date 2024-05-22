@@ -104,10 +104,10 @@ if __name__ == '__main__':
         count = 0
         start_epoch = 0
         log_loss = []
-    max_psnr = 38.018
-    max_psnr_epoch = 3385
-    max_ssim = 0.9609
-    max_ssim_epoch = 3375
+    max_psnr = 38.041
+    max_psnr_epoch = 5620
+    max_ssim = 0.9611
+    max_ssim_epoch = 5335
 
     for epoch in range(start_epoch+1, args.num_epochs+1):
         model.train()
@@ -158,8 +158,8 @@ if __name__ == '__main__':
             with torch.no_grad():
                 psnr, ssim, cnt = 0., 0., 0
 
-                img_eval_dir = os.path.join(args.save_dir, 'model_eval', f'{epoch}')
-                os.mkdir(img_eval_dir)
+                # img_eval_dir = os.path.join(args.save_dir, 'model_eval', f'{epoch}')
+                # os.mkdir(img_eval_dir)
 
                 for imgs in eval_dataloader:
                     cnt += 1

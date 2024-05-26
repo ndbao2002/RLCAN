@@ -35,10 +35,29 @@ class NALayer(nn.Module):
         x = x + self.mlp(self.lnorm(x)) 
         x = rearrange(x, ('n (h w) c -> n c h w'), h = H)
         return x
+    
+## Channel Attention (CA) Layer
+class CALayer(nn.Module):
+    def __init__(self, channel, reduction=18):
+        super(CALayer, self).__init__()
+        
+        # global average pooling: feature --> point
+        # feature channel downscale and upscale --> channel weight
+        self.conv_global = nn.Sequential(
+                nn.AdaptiveAvgPool2d(1),
+                nn.Conv2d(channel, channel // reduction, 1, padding=0, bias=True),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
+                nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        y = self.conv_global(x)
+        return x * y
 
 ## Residual Group (RG)
 class ResidualGroup(nn.Module):
-    def __init__(self, conv, n_feat, kernel_size, heads, act, res_scale, n_resblocks, window_size=7):
+    def __init__(self, conv, n_feat, kernel_size, heads, act, reduction, n_resblocks, window_size=7):
         super(ResidualGroup, self).__init__()
         modules_body = [
             NALayer(channel=n_feat, heads=heads, window_size=window_size) \
@@ -47,11 +66,10 @@ class ResidualGroup(nn.Module):
         self.body = nn.Sequential(*modules_body)
         
         self.conv = nn.Sequential(            
-            conv(n_feat, n_feat, 7, bias=True),
-            nn.GroupNorm(1, n_feat),
-            conv(n_feat, n_feat*4, 1, bias=True),
+            conv(n_feat, n_feat//4, 1, bias=True),
             act if act else nn.Identity(),
-            conv(n_feat*4, n_feat, 1, bias=True),
+            conv(n_feat//4, n_feat, 1, bias=True),
+            CALayer(n_feat, reduction)
         )
 
     def forward(self, x):
@@ -71,7 +89,7 @@ class RNAN(nn.Module):
         kernel_size = 3
         heads = args.heads
         scale = args.scale
-        res_scale = args.res_scale
+        reduction = args.reduction
         act = nn.GELU()
 
         # RGB mean for DIV2K
@@ -85,7 +103,7 @@ class RNAN(nn.Module):
         # define body module
         modules_body = [
             ResidualGroup(
-                conv, n_feats, kernel_size, heads, act=act, res_scale=res_scale, n_resblocks=n_resblocks, window_size=window_size) \
+                conv, n_feats, kernel_size, heads, act=act, reduction=reduction, n_resblocks=n_resblocks, window_size=window_size) \
             for _ in range(n_resgroups)]
 
         modules_body.append(conv(n_feats, n_feats, kernel_size))

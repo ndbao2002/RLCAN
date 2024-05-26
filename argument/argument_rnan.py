@@ -35,6 +35,7 @@ args.scale = 2
 args.n_resgroups = 6
 args.n_resblocks = 6
 args.n_feats = 180
+args.reduction = 18
 args.heads = 4
 args.window_size = 7
 
@@ -42,7 +43,7 @@ args.n_colors = 3
 args.res_scale = 1.0
 args.rgb_range = 1.0
 
-args.pre_trained = None
+args.pre_trained = "/media/btlen03/ndbao/pre_trained_model/RNAN/current_model.pth"
 
 ### loss setting
 args.GAN_type = 'WGAN_GP'
@@ -59,7 +60,7 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [4000, 6000, 7000, 7500]
+args.decay = [2000, 3000, 3500, 4000]
 args.gamma = 0.5
 
 ### training setting

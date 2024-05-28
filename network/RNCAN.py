@@ -106,7 +106,7 @@ class NABlock(nn.Module):
 
 ## Residual Group (RG)
 class ResidualGroup(nn.Module):
-    def __init__(self, conv, n_feat, kernel_size, heads, act, reduction, n_resblocks, window_size=7, last_window_size=15):
+    def __init__(self, conv, n_feat, kernel_size, heads, act, reduction, n_resblocks, window_size=15, last_window_size=31):
         super(ResidualGroup, self).__init__()
         modules_body = [
             NCABlock(conv=conv, n_feat=n_feat, heads=heads, window_size=window_size, act=act, reduction=reduction) \

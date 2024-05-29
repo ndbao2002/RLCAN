@@ -31,7 +31,7 @@ args.num_workers = 2
 args.batch_size = 8
 
 ### model setting
-args.scale = 2
+args.scale = 4
 args.n_resgroups = 12
 args.n_feats = 180
 args.gc = 32

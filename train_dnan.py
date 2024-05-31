@@ -83,18 +83,21 @@ if __name__ == '__main__':
         data = torch.load(os.path.join(last_trained_path))
         if save_all_training:
             # scheduler.load_state_dict(data['scheduler'])
+            
+            optimizer.load_state_dict(data['opt'])
+            lr = args.lr_rate
+            for milestone in args.decay:
+                if data['epoch'] > milestone:
+                    lr *= args.gamma
+            for g in optimizer.param_groups:
+                g['lr'] = lr
+                
             scheduler = optim.lr_scheduler.MultiStepLR(
                 optimizer,
                 milestones=args.decay,
                 gamma=args.gamma,
                 last_epoch=data['epoch'],
             )
-            optimizer.load_state_dict(data['opt'])
-            
-            lr = scheduler.get_last_lr()[0]
-            
-            for g in optimizer.param_groups:
-                g['lr'] = lr
             
         model.load_state_dict(data['model'])
         logger.info(f'Load Pretrained model at epoch {data['epoch']}')

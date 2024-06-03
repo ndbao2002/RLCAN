@@ -4,59 +4,27 @@ from torch import nn
 
 ## Channel Attention (CA) Layer
 class CALayer(nn.Module):
-    def __init__(self, channel, reduction=16, local=None):
+    def __init__(self, channel, reduction=16):
         super(CALayer, self).__init__()
-        self.local = local
-        
-        # local average pooling: feature --> points of feature
-        if self.local:
-            self.local_pool = nn.AdaptiveAvgPool2d(local)
-            # feature channel downscale and upscale --> channel weight
-            self.conv_local = nn.Sequential(
-                    nn.Conv2d(channel, channel // reduction, 1, padding=0, bias=True),
-                    nn.ReLU(inplace=True),
-                    nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
-                    nn.Sigmoid()
-            )
-        else:
-            # global average pooling: feature --> point
-            self.global_pool = nn.AdaptiveAvgPool2d(1)
-            # feature channel downscale and upscale --> channel weight
-            self.conv_global = nn.Sequential(
-                    nn.Conv2d(channel, channel // reduction, 1, padding=0, bias=True),
-                    nn.ReLU(inplace=True),
-                    nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
-                    nn.Sigmoid()
-            )
-
-
-    def local_attention(self, z, x):
-        H = x.size(-2) // z.size(-2)
-        W = x.size(-1) // z.size(-1)
-        
-        for i in range(H):
-            for j in range(W):
-                x[...,i*H:(i+1)*H,j*W:(j+1)*W] \
-                = x[...,i*H:(i+1)*H,j*W:(j+1)*W].clone() * z[:,:,i:i+1,j:j+1]
-
-        return x
-
+        # global average pooling: feature --> point
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        # feature channel downscale and upscale --> channel weight
+        self.conv_du = nn.Sequential(
+                nn.Conv2d(channel, channel // reduction, 1, padding=0, bias=True),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(channel // reduction, channel, 1, padding=0, bias=True),
+                nn.Sigmoid()
+        )
 
     def forward(self, x):
-        if self.local:
-            z = self.local_pool(x)
-            z = self.conv_local(z)
-            x = self.local_attention(z, x.clone())
-        else: 
-            y = self.global_pool(x)
-            y = self.conv_global(y)
-            x = x * y
-        return x
+        y = self.avg_pool(x)
+        y = self.conv_du(y)
+        return x * y
 
 ## Residual Channel Attention Block (RCAB)
 class RCAB(nn.Module):
     def __init__(
-        self, conv, n_feat, kernel_size, reduction, num_windows=None,
+        self, conv, n_feat, kernel_size, reduction,
         bias=True, bn=False, act=nn.ReLU(True), res_scale=1):
 
         super(RCAB, self).__init__()
@@ -65,7 +33,7 @@ class RCAB(nn.Module):
             modules_body.append(conv(n_feat, n_feat, kernel_size, bias=bias))
             if bn: modules_body.append(nn.BatchNorm2d(n_feat))
             if i == 0: modules_body.append(act)
-        modules_body.append(CALayer(n_feat, reduction, num_windows))
+        modules_body.append(CALayer(n_feat, reduction))
         self.body = nn.Sequential(*modules_body)
         self.res_scale = res_scale
 
@@ -77,13 +45,12 @@ class RCAB(nn.Module):
 
 ## Residual Group (RG)
 class ResidualGroup(nn.Module):
-    def __init__(self, conv, n_feat, kernel_size, reduction, act, res_scale, n_resblocks, num_windows=[4]):
+    def __init__(self, conv, n_feat, kernel_size, reduction, act, res_scale, n_resblocks):
         super(ResidualGroup, self).__init__()
         modules_body = []
         modules_body = [
             RCAB(
-                conv, n_feat, kernel_size, reduction, None if i%2==0 else num_windows[i%len(num_windows)],
-                bias=True, bn=False, act=nn.ReLU(True), res_scale=1) \
+                conv, n_feat, kernel_size, reduction, bias=True, bn=False, act=nn.ReLU(True), res_scale=1) \
             for i in range(n_resblocks)]
         modules_body.append(conv(n_feat, n_feat, kernel_size))
         self.body = nn.Sequential(*modules_body)
@@ -101,7 +68,6 @@ class RCAN(nn.Module):
         n_resgroups = args.n_resgroups
         n_resblocks = args.n_resblocks
         n_feats = args.n_feats
-        num_windows = args.num_windows
         kernel_size = 3
         reduction = args.reduction 
         scale = args.scale
@@ -118,7 +84,7 @@ class RCAN(nn.Module):
         # define body module
         modules_body = [
             ResidualGroup(
-                conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale, n_resblocks=n_resblocks, num_windows=num_windows) \
+                conv, n_feats, kernel_size, reduction, act=act, res_scale=args.res_scale, n_resblocks=n_resblocks) \
             for _ in range(n_resgroups)]
 
         modules_body.append(conv(n_feats, n_feats, kernel_size))

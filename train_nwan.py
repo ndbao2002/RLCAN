@@ -1,8 +1,7 @@
-from argument.argument_rcan import args
+from argument.argument_nwan import args
 from utils.utils import mkExpDir, save_model, calc_psnr_and_ssim_torch_metric
 from dataset.dataset import Train_Dataset, Test_Dataset
-from network.RCAN import RCAN
-from network.utils import Vgg19
+from network.NWAN import NWAN
 from loss import get_loss_dict
 import os
 
@@ -42,7 +41,9 @@ if __name__ == '__main__':
     logger.info('DATASET LOADED')
     
     # Define model
-    model = RCAN(args)
+    model = NWAN(upscale=args.upscale, in_chans=args.in_chans, img_size=args.img_size, window_size=args.window_size,
+                img_range=args.img_range, depths=args.depths, embed_dim=args.embed_dim, num_heads=args.num_heads,
+                mlp_ratio=args.mlp_ratio, upsampler=args.upsampler, resi_connection=args.resi_connection)
     
     if args.pre_trained:
         model.load_state_dict(
@@ -84,11 +85,25 @@ if __name__ == '__main__':
     if last_trained_path:
         data = torch.load(os.path.join(last_trained_path))
         if save_all_training:
-            scheduler.load_state_dict(data['scheduler'])
-            # for _ in range(data['epoch']):
-            #     scheduler.step()
+            # scheduler.load_state_dict(data['scheduler'])
+            
             optimizer.load_state_dict(data['opt'])
+            lr = args.lr_rate
+            for milestone in args.decay:
+                if data['epoch'] > milestone:
+                    lr *= args.gamma
+            for g in optimizer.param_groups:
+                g['lr'] = lr
+                
+            scheduler = optim.lr_scheduler.MultiStepLR(
+                optimizer,
+                milestones=args.decay,
+                gamma=args.gamma,
+                last_epoch=data['epoch'],
+            )
+
         model.load_state_dict(data['model'])
+        logger.info(f'Load Pretrained model at epoch {data['epoch']}')
         count = data['step']
         start_epoch = data['epoch']
         log_loss = data['loss']

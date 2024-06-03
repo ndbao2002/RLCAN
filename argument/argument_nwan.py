@@ -5,11 +5,11 @@ args = CN()
 args.phase = 'train'
 
 ### log setting
-args.save_dir = './ndbao/RCAN'
+args.save_dir = './ndbao/RNCAN'
 args.reset = True # Delete save_dir to create a new one
-args.log_file_name = 'RCAN.log'
-args.logger_name = 'RCAN'
-args.writer_path = './ndbao/runs/RCAN'
+args.log_file_name = 'RNCAN.log'
+args.logger_name = 'RNCAN'
+args.writer_path = './ndbao/runs/RNCAN'
 
 ### device setting
 args.cpu = False
@@ -31,15 +31,17 @@ args.num_workers = 2
 args.batch_size = 16
 
 ### model setting
-args.scale = 2
-args.n_resgroups = 10
-args.n_resblocks = 20
-args.n_feats = 64
-args.reduction = 16
-
-args.n_colors = 3
-args.res_scale = 1.0
-args.rgb_range = 1.0
+args.upscale=2 
+args.in_chans=3 
+args.img_size=224 
+args.window_size=8
+args.img_range=1. 
+args.depths=[6, 6, 6, 6, 6, 6]
+args.embed_dim=180
+args.num_heads=[6, 6, 6, 6, 6, 6],
+args.mlp_ratio=2
+args.upsampler='pixelshuffle'
+args.resi_connection='1conv'
 
 args.pre_trained = None
 

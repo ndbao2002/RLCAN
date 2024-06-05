@@ -79,16 +79,30 @@ if __name__ == '__main__':
     # Train
     model.to(device)
 
-    last_trained_path = None
+    last_trained_path = "/media/btlen03/ndbao/pre_trained_model/RCAN/current_model.pth"
     save_all_training = True
     if last_trained_path:
         data = torch.load(os.path.join(last_trained_path))
         if save_all_training:
-            scheduler.load_state_dict(data['scheduler'])
-            # for _ in range(data['epoch']):
-            #     scheduler.step()
+            # scheduler.load_state_dict(data['scheduler'])
+            
             optimizer.load_state_dict(data['opt'])
+            lr = args.lr_rate
+            for milestone in args.decay:
+                if data['epoch'] > milestone:
+                    lr *= args.gamma
+            for g in optimizer.param_groups:
+                g['lr'] = lr
+                
+            scheduler = optim.lr_scheduler.MultiStepLR(
+                optimizer,
+                milestones=args.decay,
+                gamma=args.gamma,
+                last_epoch=data['epoch'],
+            )
+
         model.load_state_dict(data['model'])
+        logger.info(f'Load Pretrained model at epoch {data['epoch']}')
         count = data['step']
         start_epoch = data['epoch']
         log_loss = data['loss']
@@ -96,10 +110,10 @@ if __name__ == '__main__':
         count = 0
         start_epoch = 0
         log_loss = []
-    max_psnr = 0
-    max_psnr_epoch = 0
-    max_ssim = 0
-    max_ssim_epoch = 0
+    max_psnr = 37.857
+    max_psnr_epoch = 900
+    max_ssim = 0.9602
+    max_ssim_epoch = 910
 
     for epoch in range(start_epoch+1, args.num_epochs+1):
         model.train()

@@ -5,11 +5,11 @@ args = CN()
 args.phase = 'train'
 
 ### log setting
-args.save_dir = './ndbao/RNCAN'
+args.save_dir = './ndbao/NWAN'
 args.reset = True # Delete save_dir to create a new one
-args.log_file_name = 'RNCAN.log'
-args.logger_name = 'RNCAN'
-args.writer_path = './ndbao/runs/RNCAN'
+args.log_file_name = 'NWAN.log'
+args.logger_name = 'NWAN'
+args.writer_path = './ndbao/runs/NWAN'
 
 ### device setting
 args.cpu = False
@@ -33,7 +33,7 @@ args.batch_size = 16
 ### model setting
 args.upscale=2 
 args.in_chans=3 
-args.img_size=224 
+args.img_size=128 
 args.window_size=8
 args.img_range=1. 
 args.depths=[6, 6, 6, 6, 6, 6]
@@ -58,8 +58,8 @@ args.D_path = None
 args.beta1 = 0.9
 args.beta2 = 0.999
 args.eps = 1e-8
-args.lr_rate = 1e-4
-args.lr_rate_dis = 1e-4
+args.lr_rate = 2e-4
+args.lr_rate_dis = 2e-4
 args.decay = [2000, 4000, 5000, 6000]
 args.gamma = 0.5
 

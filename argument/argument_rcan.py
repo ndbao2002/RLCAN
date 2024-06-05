@@ -58,13 +58,13 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [2000, 4000, 5000, 6000]
+args.decay = [2000, 3000, 3500, 4000]
 args.gamma = 0.5
 
 ### training setting
 args.train_crop_size = 48
 args.num_init_epochs = 2
-args.num_epochs = 9999 # keep training
+args.num_epochs = 4500 # keep training
 args.print_every = 20
 args.val_every = 5
 args.save_every = 5

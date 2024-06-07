@@ -173,16 +173,19 @@ if __name__ == '__main__':
                     hr, lr = imgs
                     hr = hr.to(device)
                     lr = lr.to(device)
-                    
-                    h_old = lr.size(2)
-                    w_old = lr.size(3)
                         
+                    _, _, h_old, w_old = lr.size()
+                    h_pad = (h_old // args.window_size + 1) * args.window_size - h_old if h_old % args.window_size != 0 else 0
+                    w_pad = (w_old // args.window_size + 1) * args.window_size - w_old if w_old % args.window_size != 0 else 0
+                    lr = torch.cat([lr, torch.flip(lr, [2])], 2)[:, :, :h_old + h_pad, :]
+                    lr = torch.cat([lr, torch.flip(lr, [3])], 3)[:, :, :, :w_old + w_pad]
                     sr = model(lr)
+                    sr = sr[..., :h_old * args.scale, :w_old * args.scale]
 
                     ### calculate psnr and ssim
                     _psnr, _ssim = calc_psnr_and_ssim_torch_metric(sr.detach(), hr.detach())
 
-                    lr = F.interpolate(lr, (hr.size(2), hr.size(3)), mode='bicubic')
+                    # lr = F.interpolate(lr, (hr.size(2), hr.size(3)), mode='bicubic')
 
                     # torchvision.utils.save_image(torch.concat([hr, sr, lr], dim=0),
                     #                             os.path.join(img_eval_dir, f'Set5_{cnt}.png'))
@@ -201,9 +204,9 @@ if __name__ == '__main__':
                     max_ssim_epoch = epoch
                     save_model(args.save_all, model, optimizer, scheduler, count, epoch, log_loss,
                             os.path.join(args.save_dir, 'model', 'max_ssim_model.pth'))
-                logger.info('Eval  PSNR (max): %.3f (%d) \t SSIM (max): %.4f (%d)'
+                logger.info('Eval (with pad) PSNR (max): %.3f (%d) \t SSIM (max): %.4f (%d)'
                         %(max_psnr, max_psnr_epoch, max_ssim, max_ssim_epoch))
-                logger.info('Eval  PSNR (current): %.3f (%d) \t SSIM (current): %.4f (%d)'
+                logger.info('Eval (with pad) PSNR (current): %.3f (%d) \t SSIM (current): %.4f (%d)'
                         %(psnr_avg, epoch, ssim_avg, epoch))
             logger.info('Evaluation over.')
         if epoch % args.save_every == 0:

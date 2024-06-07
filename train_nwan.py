@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # Train
     model.to(device)
 
-    last_trained_path = None
+    last_trained_path = '/media/btlen03/ndbao/pre_trained_model/NWAN/current_model.pth'
     save_all_training = True
     if last_trained_path:
         data = torch.load(os.path.join(last_trained_path))
@@ -111,10 +111,10 @@ if __name__ == '__main__':
         count = 0
         start_epoch = 0
         log_loss = []
-    max_psnr = 0
-    max_psnr_epoch = 0
-    max_ssim = 0
-    max_ssim_epoch = 0
+    max_psnr = 38.154
+    max_psnr_epoch = 2055
+    max_ssim = 0.9614
+    max_ssim_epoch = 2140
 
     for epoch in range(start_epoch+1, args.num_epochs+1):
         model.train()

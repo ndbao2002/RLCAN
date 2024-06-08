@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # Train
     model.to(device)
 
-    last_trained_path = "/media/btlen03/ndbao/pre_trained_model/RCAN/current_model.pth"
+    last_trained_path = None
     save_all_training = True
     if last_trained_path:
         data = torch.load(os.path.join(last_trained_path))

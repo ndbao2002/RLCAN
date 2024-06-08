@@ -40,7 +40,7 @@ args.n_colors = 3
 args.res_scale = 1.0
 args.rgb_range = 1.0
 
-args.pre_trained = '/media/btlen03/ndbao/pre_trained_model/RCAN/current_model.pth'
+args.pre_trained = None
 
 ### loss setting
 args.GAN_type = 'WGAN_GP'
@@ -57,13 +57,13 @@ args.beta2 = 0.999
 args.eps = 1e-8
 args.lr_rate = 1e-4
 args.lr_rate_dis = 1e-4
-args.decay = [1000, 1500, 1750, 2000]
+args.decay = [4000, 8000, 12000, 16000, 20000]
 args.gamma = 0.5
 
 ### training setting
 args.train_crop_size = 48
 args.num_init_epochs = 2
-args.num_epochs = 2250 # keep training
+args.num_epochs = 3000 # keep training
 args.print_every = 20
 args.val_every = 5
 args.save_every = 5

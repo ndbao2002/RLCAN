@@ -19,7 +19,7 @@ def conv3x3(in_channels, out_channels, stride=1):
                      stride=stride, padding=1, bias=True)
 
     
-def calc_psnr_and_ssim_torch_metric(hr, sr):
+def calc_psnr_and_ssim_torch_metric(hr, sr, shaved=None):
     sr = sr * 255
     hr = hr * 255
     if (sr.size() != hr.size()):
@@ -28,8 +28,8 @@ def calc_psnr_and_ssim_torch_metric(hr, sr):
         sr = sr[:, :, :h_min, :w_min]
         hr = hr[:, :, :h_min, :w_min]
 
-    sr = sr.round().to(torch.float64).cpu()
-    hr = hr.round().to(torch.float64).cpu()
+    sr = sr.round().cpu()
+    hr = hr.round().cpu()
 
     sr[:,0,:,:] = sr[:,0,:,:] * 65.738/256.0
     sr[:,1,:,:] = sr[:,1,:,:] * 129.057/256.0
@@ -40,6 +40,10 @@ def calc_psnr_and_ssim_torch_metric(hr, sr):
     hr[:,1,:,:] = hr[:,1,:,:] * 129.057/256.0
     hr[:,2,:,:] = hr[:,2,:,:] * 25.064/256.0
     hr = hr.sum(dim=1, keepdim=True) + 16.0
+
+    if shaved:
+        sr = sr[:, :, shaved:-shaved, shaved:-shaved]
+        hr = hr[:, :, shaved:-shaved, shaved:-shaved]
 
     ssim_cal = StructuralSimilarityIndexMeasure(data_range=255)
     psnr_cal = PeakSignalNoiseRatio(data_range=255)

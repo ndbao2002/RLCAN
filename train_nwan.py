@@ -47,7 +47,7 @@ if __name__ == '__main__':
     
     if args.pre_trained:
         model.load_state_dict(
-            torch.load(args.pre_trained),
+            torch.load(args.pre_trained)['model'],
             strict=False,)
         logger.info('PRETRAINED MODEL LOADED')
     else:
@@ -111,10 +111,10 @@ if __name__ == '__main__':
         count = 0
         start_epoch = 0
         log_loss = []
-    max_psnr = 38.216
-    max_psnr_epoch = 3675
-    max_ssim = 0.9616
-    max_ssim_epoch = 3825
+    max_psnr = 38.28
+    max_psnr_epoch = 5780
+    max_ssim = 0.9617
+    max_ssim_epoch = 5780
 
     for epoch in range(start_epoch+1, args.num_epochs+1):
         model.train()
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                     sr = sr[..., :h_old * args.scale, :w_old * args.scale]
 
                     ### calculate psnr and ssim
-                    _psnr, _ssim = calc_psnr_and_ssim_torch_metric(sr.detach(), hr.detach())
+                    _psnr, _ssim = calc_psnr_and_ssim_torch_metric(sr.detach(), hr.detach(), shaved=args.scale)
 
                     # lr = F.interpolate(lr, (hr.size(2), hr.size(3)), mode='bicubic')
 
